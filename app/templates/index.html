@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+
+{% block title %}AI Diet Planner | Generate Personalized Nutrition Plan{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-badge">
+        <i class="fa-solid fa-sparkles"></i> AI-Powered Clinical Nutrition Architecture
+    </div>
+    <h1 class="hero-title">
+        Design Your Ideal Diet with <span class="gradient-text">Precision Intelligence</span>
+    </h1>
+    <p class="hero-subtitle">
+        Calculates clinical BMR, TDEE, and macro thresholds, then drafts customized, chef-curated daily meal schedules, recipe instructions, and smart grocery checklists.
+    </p>
+</section>
+
+<div class="planner-layout">
+    <!-- Left Column: Step-by-Step Wizard Form -->
+    <div class="planner-form-card glass-panel">
+        <div class="wizard-progress">
+            <div class="step-indicator active" data-step="1">
+                <div class="step-num">1</div>
+                <div class="step-label">Body Vitals</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="2">
+                <div class="step-num">2</div>
+                <div class="step-label">Goal & Energy</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="3">
+                <div class="step-num">3</div>
+                <div class="step-label">Diet & Taste</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step-indicator" data-step="4">
+                <div class="step-num">4</div>
+                <div class="step-label">AI Engine</div>
+            </div>
+        </div>
+
+        <form id="diet-wizard-form" autocomplete="off">
+            <!-- STEP 1: Body Vitals -->
+            <div class="wizard-pane active" id="pane-step-1">
+                <div class="pane-header">
+                    <h3><i class="fa-solid fa-user-gear"></i> Client Vitals & Body Metrics</h3>
+                    <p>Enter biological metrics used to compute BMR and metabolic expenditure.</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="user_name">Full Name or Client ID</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-signature"></i>
+                            <input type="text" id="user_name" name="user_name" placeholder="e.g. Abhishek Sharma" value="Abhishek">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Age (Years) <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-cake-candles"></i>
+                            <input type="number" id="age" name="age" min="14" max="100" value="24" required class="live-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="gender">Biological Gender <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-venus-mars"></i>
+                            <select id="gender" name="gender" required class="live-input">
+                                <option value="male" selected>Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other / Gender Neutral</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="weight">Current Weight (kg) <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-weight-scale"></i>
+                            <input type="number" id="weight" name="weight" step="0.5" min="30" max="300" value="72" required class="live-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="height">Height (cm) <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-ruler-vertical"></i>
+                            <input type="number" id="height" name="height" step="1" min="100" max="250" value="175" required class="live-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="target_weight">Target Weight (kg) <span class="optional">(Optional)</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-bullseye"></i>
+                            <input type="number" id="target_weight" name="target_weight" step="0.5" min="30" max="300" placeholder="e.g. 68" value="67">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pane-footer">
+                    <div></div>
+                    <button type="button" class="btn btn-primary next-step-btn" data-next="2">
+                        Next: Goal & Energy <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 2: Goal & Activity -->
+            <div class="wizard-pane" id="pane-step-2">
+                <div class="pane-header">
+                    <h3><i class="fa-solid fa-heart-pulse"></i> Lifestyle Activity & Target Goal</h3>
+                    <p>Adjusts physical multipliers for accurate daily caloric requirements.</p>
+                </div>
+
+                <div class="form-group">
+                    <label>Daily Activity Level <span class="required">*</span></label>
+                    <div class="radio-card-grid">
+                        <label class="radio-card">
+                            <input type="radio" name="activity_level" value="sedentary" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-couch"></i>
+                                <span class="card-title">Sedentary</span>
+                                <span class="card-desc">Desk job, little to no regular exercise</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="activity_level" value="lightly_active" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-person-walking"></i>
+                                <span class="card-title">Lightly Active</span>
+                                <span class="card-desc">Light training or sports 1-3 days/week</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card selected">
+                            <input type="radio" name="activity_level" value="moderately_active" checked class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-person-running"></i>
+                                <span class="card-title">Moderately Active</span>
+                                <span class="card-desc">Moderate workout 3-5 days/week</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="activity_level" value="very_active" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-dumbbell"></i>
+                                <span class="card-title">Very Active</span>
+                                <span class="card-desc">Heavy workouts or lifting 6-7 days/week</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>Primary Health & Fitness Goal <span class="required">*</span></label>
+                    <div class="radio-card-grid">
+                        <label class="radio-card selected">
+                            <input type="radio" name="goal" value="weight_loss" checked class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-fire"></i>
+                                <span class="card-title">Fat Loss</span>
+                                <span class="card-desc">500 kcal deficit, high protein retention</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="goal" value="muscle_gain" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-hand-fist"></i>
+                                <span class="card-title">Muscle Hypertrophy</span>
+                                <span class="card-desc">Lean 350 kcal surplus with protein surplus</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="goal" value="maintenance" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                                <span class="card-title">Maintenance</span>
+                                <span class="card-desc">Metabolic recomp & vital longevity</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="goal" value="keto" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-egg"></i>
+                                <span class="card-title">Ketogenic Diet</span>
+                                <span class="card-desc">High healthy fats, ultra low-carb state</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="goal" value="diabetic_friendly" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-droplet-slash"></i>
+                                <span class="card-title">Blood Sugar Control</span>
+                                <span class="card-desc">Low glycemic index, sustained insulin curve</span>
+                            </div>
+                        </label>
+
+                        <label class="radio-card">
+                            <input type="radio" name="goal" value="heart_health" class="live-input">
+                            <div class="card-inner">
+                                <i class="fa-solid fa-heart-pulse"></i>
+                                <span class="card-title">Cardio & Lipid Health</span>
+                                <span class="card-desc">Low sodium, omega-3, high soluble fiber</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pane-footer">
+                    <button type="button" class="btn btn-secondary prev-step-btn" data-prev="1">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-primary next-step-btn" data-next="3">
+                        Next: Diet & Taste <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 3: Diet & Cuisine Preferences -->
+            <div class="wizard-pane" id="pane-step-3">
+                <div class="pane-header">
+                    <h3><i class="fa-solid fa-bowl-food"></i> Food Philosophy & Dietary Restrictions</h3>
+                    <p>Customize meals according to your culture, ethics, and digestion.</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="dietary_preference">Dietary Pattern <span class="required">*</span></label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-leaf"></i>
+                            <select id="dietary_preference" name="dietary_preference" required class="live-input">
+                                <option value="vegetarian" selected>Vegetarian (Includes Dairy, Lentils, Paneer)</option>
+                                <option value="non-vegetarian">Non-Vegetarian (Eggs, Chicken, Fish, Meat)</option>
+                                <option value="eggetarian">Eggetarian (Vegetarian + Eggs)</option>
+                                <option value="vegan">100% Vegan (Plant-based, Dairy-free)</option>
+                                <option value="jain">Jain Vegetarian (No Root Vegetables / Onion / Garlic)</option>
+                                <option value="gluten-free">Gluten-Free Only</option>
+                                <option value="lactose-free">Lactose-Free Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cuisine">Preferred Cuisine Style</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-earth-asia"></i>
+                            <select id="cuisine" name="cuisine">
+                                <option value="indian" selected>Indian (North / South Balanced)</option>
+                                <option value="mediterranean">Mediterranean & Fresh Olive Oils</option>
+                                <option value="continental">Continental & High-Protein Bowls</option>
+                                <option value="asian">Pan-Asian Stir Fries & Broths</option>
+                                <option value="flexible">Mixed & Flexible</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="meal_count">Daily Meal Schedule</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-utensils"></i>
+                            <select id="meal_count" name="meal_count">
+                                <option value="5" selected>5 Meals (3 Main + 2 Smart Snacks)</option>
+                                <option value="4">4 Meals (3 Main + 1 Evening Snack)</option>
+                                <option value="3">3 Meals (Intermittent Fasting 16/8 friendly)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label for="allergies">Allergies, Intolerances & Disliked Ingredients</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-ban"></i>
+                            <input type="text" id="allergies" name="allergies" placeholder="e.g. Peanuts, Shellfish, Mushrooms, Excess spice">
+                        </div>
+                        <span class="field-hint">The AI will strictly omit these from recipes and meal schedules.</span>
+                    </div>
+                </div>
+
+                <div class="pane-footer">
+                    <button type="button" class="btn btn-secondary prev-step-btn" data-prev="2">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-primary next-step-btn" data-next="4">
+                        Next: AI Engine <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 4: AI Engine & Generation -->
+            <div class="wizard-pane" id="pane-step-4">
+                <div class="pane-header">
+                    <h3><i class="fa-solid fa-microchip"></i> AI Engine Configuration & Launch</h3>
+                    <p>Review final settings and activate generative recipe planning.</p>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label for="title">Diet Plan Title</label>
+                        <div class="input-with-icon">
+                            <i class="fa-solid fa-heading"></i>
+                            <input type="text" id="title" name="title" value="My 30-Day Metabolic Transformation Plan">
+                        </div>
+                    </div>
+
+                    <div class="form-group full-width">
+                        <div class="api-key-banner">
+                            <div class="api-key-header">
+                                <div class="badge-gemini"><i class="fa-brands fa-google"></i> Google Gemini AI</div>
+                                <span class="badge badge-success">Optional & Auto-Fallback</span>
+                            </div>
+                            <p class="api-key-desc">
+                                If you have a free Google Gemini API Key, paste it below for tailored culinary creativity. If left empty, our built-in <strong>Clinical Nutrition Engine</strong> will automatically generate your structured plan with zero error.
+                            </p>
+                            <div class="input-with-icon mt-2">
+                                <i class="fa-solid fa-key"></i>
+                                <input type="password" id="gemini_api_key" name="gemini_api_key" placeholder="AIzaSy... (Leave blank to use server key or smart fallback)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pane-footer">
+                    <button type="button" class="btn btn-secondary prev-step-btn" data-prev="3">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                    <button type="submit" id="generate-submit-btn" class="btn btn-accent btn-glow">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Diet Plan
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Column: Live Interactive Calculator & Macro Card -->
+    <div class="planner-preview-sidebar">
+        <div class="preview-card glass-panel sticky-preview" id="quick-calculator">
+            <div class="preview-header">
+                <div>
+                    <span class="preview-badge"><i class="fa-solid fa-chart-pie"></i> Live Metabolic Vitals</span>
+                    <h4>Estimated Daily Target</h4>
+                </div>
+                <div class="live-pulse" title="Calculating in real time">
+                    <span class="pulse-ring"></span>
+                    <span class="pulse-dot"></span>
+                </div>
+            </div>
+
+            <!-- Calorie Dial -->
+            <div class="calorie-display-box">
+                <span class="cal-label">Daily Target Calories</span>
+                <div class="cal-number">
+                    <span id="preview-calories">2,050</span>
+                    <span class="cal-unit">kcal / day</span>
+                </div>
+                <span class="cal-goal-desc" id="preview-goal-desc">Fat Loss (500 kcal deficit)</span>
+            </div>
+
+            <!-- BMI & BMR Chips -->
+            <div class="vitals-chips-grid">
+                <div class="vital-chip">
+                    <span class="chip-label">BMI</span>
+                    <span class="chip-val" id="preview-bmi">23.5</span>
+                    <span class="chip-sub text-success" id="preview-bmi-cat">Normal</span>
+                </div>
+                <div class="vital-chip">
+                    <span class="chip-label">BMR</span>
+                    <span class="chip-val" id="preview-bmr">1,680</span>
+                    <span class="chip-sub">kcal basal</span>
+                </div>
+                <div class="vital-chip">
+                    <span class="chip-label">TDEE</span>
+                    <span class="chip-val" id="preview-tdee">2,550</span>
+                    <span class="chip-sub">active burn</span>
+                </div>
+                <div class="vital-chip">
+                    <span class="chip-label">Hydration</span>
+                    <span class="chip-val" id="preview-water">2.6L</span>
+                    <span class="chip-sub">~10 glasses</span>
+                </div>
+            </div>
+
+            <!-- Macro Targets -->
+            <div class="macro-breakdown-section">
+                <div class="section-title">
+                    <span>Target Macronutrient Distribution</span>
+                </div>
+
+                <!-- Custom Macro Visualizer Bars -->
+                <div class="macro-bar-container">
+                    <div class="macro-bar-segment macro-protein" id="bar-protein" style="width: 35%;"></div>
+                    <div class="macro-bar-segment macro-carbs" id="bar-carbs" style="width: 40%;"></div>
+                    <div class="macro-bar-segment macro-fats" id="bar-fats" style="width: 25%;"></div>
+                </div>
+
+                <div class="macro-stats-row">
+                    <div class="macro-stat-item">
+                        <span class="stat-indicator protein-dot"></span>
+                        <div class="stat-text">
+                            <span class="stat-name">Protein</span>
+                            <span class="stat-val" id="preview-protein">180g</span>
+                            <span class="stat-pct" id="preview-protein-pct">35%</span>
+                        </div>
+                    </div>
+
+                    <div class="macro-stat-item">
+                        <span class="stat-indicator carbs-dot"></span>
+                        <div class="stat-text">
+                            <span class="stat-name">Carbs</span>
+                            <span class="stat-val" id="preview-carbs">205g</span>
+                            <span class="stat-pct" id="preview-carbs-pct">40%</span>
+                        </div>
+                    </div>
+
+                    <div class="macro-stat-item">
+                        <span class="stat-indicator fats-dot"></span>
+                        <div class="stat-text">
+                            <span class="stat-name">Fats</span>
+                            <span class="stat-val" id="preview-fats">57g</span>
+                            <span class="stat-pct" id="preview-fats-pct">25%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="preview-guarantee">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Clinical energy formulas calibrated to clinical standards.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+    <div class="loading-card glass-panel">
+        <div class="spinner-ring"></div>
+        <h3 id="loading-status-title">Architecting Your Nutrition Plan...</h3>
+        <p id="loading-status-desc">Calculating macronutrient ratios and querying Gemini AI for personalized meal schedules...</p>
+        <div class="loading-steps">
+            <div class="l-step done"><i class="fa-solid fa-check"></i> Mifflin-St Jeor Energy Balance</div>
+            <div class="l-step active"><i class="fa-solid fa-spinner fa-spin"></i> Recipe & Portion Optimization</div>
+            <div class="l-step"><i class="fa-regular fa-clock"></i> Grocery Checklist Compilation</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

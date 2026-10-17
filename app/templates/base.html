@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AI Diet Planner | Clinical & Intelligent Nutrition{% endblock %}</title>
+    <meta name="description" content="AI-Powered Personalized Diet & Nutrition Planner with precision clinical calorie calculation, customized meal schedules, and grocery lists.">
+    
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons for clean UI -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Core Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="theme-dark">
+    <!-- Background Ambient Glow -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    
+    <!-- Navigation Bar -->
+    <header class="navbar-wrapper">
+        <nav class="navbar container">
+            <a href="{{ url_for('main.index') }}" class="brand-logo">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <div class="logo-text">
+                    <span class="logo-title">NutriGen<span class="accent">AI</span></span>
+                    <span class="logo-sub">Special Diet Planner</span>
+                </div>
+            </a>
+            
+            <div class="nav-links">
+                <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Planner
+                </a>
+                <a href="{{ url_for('main.history') }}" class="nav-link {% if request.endpoint == 'main.history' %}active{% endif %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Saved Plans
+                </a>
+                <a href="#quick-calculator" class="nav-link">
+                    <i class="fa-solid fa-calculator"></i> Macro Calc
+                </a>
+                <div class="nav-status-badge" title="Deployment Status">
+                    <span class="status-dot"></span> Vercel Ready
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content Injection -->
+    <main class="main-content container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <span class="logo-title">NutriGen<span class="accent">AI</span></span>
+                <p>Intelligent, clinical-grade personalized meal architecture tailored to your biology and goals.</p>
+            </div>
+            <div class="footer-tags">
+                <span class="badge"><i class="fa-brands fa-python"></i> Python 3.14 & Flask</span>
+                <span class="badge"><i class="fa-solid fa-database"></i> PostgreSQL Ready</span>
+                <span class="badge"><i class="fa-solid fa-bolt"></i> Google Gemini AI</span>
+                <span class="badge"><i class="fa-solid fa-cloud"></i> Zero-Crash Vercel Setup</span>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Special AI Diet Planner. Crafted with precision for high-performance nutrition.</p>
+        </div>
+    </footer>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

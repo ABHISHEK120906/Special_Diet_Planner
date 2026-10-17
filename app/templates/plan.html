@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}{{ plan.title }} | AI Diet Plan{% endblock %}
+
+{% block content %}
+<div class="plan-view-container">
+    <!-- Top Action Banner -->
+    <div class="plan-header-banner glass-panel">
+        <div class="plan-meta-left">
+            <div class="plan-badges-row">
+                {% if plan.ai_generated %}
+                    <span class="badge badge-accent"><i class="fa-brands fa-google"></i> Gemini AI Tailored</span>
+                {% else %}
+                    <span class="badge badge-primary"><i class="fa-solid fa-user-doctor"></i> Clinical Nutrition Engine</span>
+                {% endif %}
+                <span class="badge badge-secondary"><i class="fa-solid fa-bullseye"></i> {{ plan.goal.replace('_', ' ').title() }}</span>
+                <span class="badge badge-outline"><i class="fa-solid fa-leaf"></i> {{ plan.dietary_preference.replace('_', ' ').title() }}</span>
+            </div>
+            <h1 class="plan-main-title">{{ plan.title }}</h1>
+            <p class="plan-subtitle">
+                Engineered for <strong>{{ plan.user_name }}</strong> (Age: {{ plan.age }} | Weight: {{ plan.weight }}kg | Height: {{ plan.height }}cm)
+                &bull; Created on {{ plan.created_at.strftime("%B %d, %Y") }}
+            </p>
+        </div>
+
+        <div class="plan-actions-right no-print">
+            <button class="btn btn-secondary" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Print / Save PDF
+            </button>
+            <button class="btn btn-secondary" id="copy-summary-btn" onclick="copyPlanSummary()">
+                <i class="fa-solid fa-copy"></i> Copy Summary
+            </button>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> New Plan
+            </a>
+        </div>
+    </div>
+
+    <!-- Metric Dashboard Grid -->
+    <div class="plan-vitals-grid">
+        <div class="vital-card glass-panel highlight-card">
+            <div class="vital-icon icon-calories">
+                <i class="fa-solid fa-fire-flame-curved"></i>
+            </div>
+            <div class="vital-details">
+                <span class="v-label">Target Energy</span>
+                <span class="v-val">{{ plan.target_calories|int }} <small>kcal</small></span>
+                <span class="v-context">BMR: {{ plan.bmr|int }} | TDEE: {{ plan.tdee|int }}</span>
+            </div>
+        </div>
+
+        <div class="vital-card glass-panel">
+            <div class="vital-icon icon-protein">
+                <i class="fa-solid fa-drumstick-bite"></i>
+            </div>
+            <div class="vital-details">
+                <span class="v-label">Protein Target</span>
+                <span class="v-val text-protein">{{ plan.protein_g|int }}g</span>
+                <span class="v-context">~{{ ((plan.protein_g * 4 / plan.target_calories) * 100)|int }}% of energy</span>
+            </div>
+        </div>
+
+        <div class="vital-card glass-panel">
+            <div class="vital-icon icon-carbs">
+                <i class="fa-solid fa-wheat-awn"></i>
+            </div>
+            <div class="vital-details">
+                <span class="v-label">Complex Carbs</span>
+                <span class="v-val text-carbs">{{ plan.carbs_g|int }}g</span>
+                <span class="v-context">~{{ ((plan.carbs_g * 4 / plan.target_calories) * 100)|int }}% of energy</span>
+            </div>
+        </div>
+
+        <div class="vital-card glass-panel">
+            <div class="vital-icon icon-fats">
+                <i class="fa-solid fa-seedling"></i>
+            </div>
+            <div class="vital-details">
+                <span class="v-label">Healthy Fats</span>
+                <span class="v-val text-fats">{{ plan.fat_g|int }}g</span>
+                <span class="v-context">~{{ ((plan.fat_g * 9 / plan.target_calories) * 100)|int }}% of energy</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nutrition Rationale & Clinical Tips -->
+    {% set plan_data = plan.get_plan_data() %}
+    {% if plan_data.summary or plan_data.nutritionist_tips %}
+    <div class="rationale-card glass-panel mb-4">
+        <div class="rationale-header">
+            <h3><i class="fa-solid fa-clipboard-check"></i> Clinical Strategy & Nutritionist Protocol</h3>
+        </div>
+        {% if plan_data.summary %}
+            <p class="rationale-text">{{ plan_data.summary }}</p>
+        {% endif %}
+
+        {% if plan_data.nutritionist_tips %}
+            <div class="tips-grid">
+                {% for tip in plan_data.nutritionist_tips %}
+                    <div class="tip-pill">
+                        <i class="fa-solid fa-lightbulb text-warning"></i>
+                        <span>{{ tip }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Daily Meal Schedule -->
+    <div class="meal-schedule-section">
+        <div class="section-heading-bar">
+            <h2><i class="fa-solid fa-utensils"></i> Precision Daily Meal Architecture</h2>
+            <span class="badge badge-outline">5 Structured Feed Windows</span>
+        </div>
+
+        <div class="meals-list">
+            {% for meal in plan_data.meals %}
+            <div class="meal-card glass-panel">
+                <div class="meal-card-header">
+                    <div class="meal-time-badge">
+                        <i class="fa-regular fa-clock"></i> {{ meal.time }}
+                    </div>
+                    <div class="meal-name-title">
+                        <span class="meal-category">{{ meal.name }}</span>
+                        <h3 class="meal-headline">{{ meal.title }}</h3>
+                    </div>
+                    <div class="meal-macro-chips">
+                        <span class="m-chip cal">{{ meal.calories }} kcal</span>
+                        <span class="m-chip prot">{{ meal.protein }}g P</span>
+                        <span class="m-chip carb">{{ meal.carbs }}g C</span>
+                        <span class="m-chip fat">{{ meal.fats }}g F</span>
+                    </div>
+                </div>
+
+                <div class="meal-card-body">
+                    <div class="meal-items-col">
+                        <span class="items-title"><i class="fa-solid fa-basket-shopping"></i> Ingredients & Exact Portions</span>
+                        <ul class="meal-ingredients-list">
+                            {% for item in meal['items'] %}
+                                <li>
+                                    <i class="fa-solid fa-circle-check text-success"></i>
+                                    <span>{{ item }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    {% if meal.recipe_notes %}
+                    <div class="meal-notes-col">
+                        <div class="prep-note-box">
+                            <span class="prep-title"><i class="fa-solid fa-fire-burner"></i> Culinary Technique & Bioavailability</span>
+                            <p>{{ meal.recipe_notes }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Smart Grocery Checklist -->
+    {% if plan_data.grocery_list %}
+    <div class="grocery-section mt-5">
+        <div class="section-heading-bar">
+            <h2><i class="fa-solid fa-cart-shopping"></i> Smart Weekly Grocery Checklist</h2>
+            <span class="hint-text no-print">Click any item to check off as purchased</span>
+        </div>
+
+        <div class="grocery-categories-grid">
+            {% for category, items in plan_data.grocery_list.items() %}
+            {% set cat_idx = loop.index %}
+            <div class="grocery-card glass-panel">
+                <div class="grocery-card-header">
+                    <i class="fa-solid {% if 'Produce' in category %}fa-carrot{% elif 'Protein' in category %}fa-drumstick-bite{% elif 'Grain' in category %}fa-wheat-awn{% else %}fa-jar{% endif %}"></i>
+                    <h4>{{ category }}</h4>
+                </div>
+                <ul class="grocery-items-list">
+                    {% for item in items %}
+                    <li class="checklist-item" onclick="toggleChecklist(this)">
+                        <input type="checkbox" id="g-{{ cat_idx }}-{{ loop.index }}">
+                        <label for="g-{{ cat_idx }}-{{ loop.index }}">{{ item }}</label>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Bottom Actions -->
+    <div class="plan-footer-actions no-print mt-5">
+        <a href="{{ url_for('main.history') }}" class="btn btn-secondary">
+            <i class="fa-solid fa-clock-rotate-left"></i> View All Saved Plans
+        </a>
+        <button class="btn btn-primary" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+            <i class="fa-solid fa-arrow-up"></i> Back to Top
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleChecklist(el) {
+        const checkbox = el.querySelector('input[type="checkbox"]');
+        if (event.target !== checkbox) {
+            checkbox.checked = !checkbox.checked;
+        }
+        if (checkbox.checked) {
+            el.classList.add('checked');
+        } else {
+            el.classList.remove('checked');
+        }
+    }
+
+    function copyPlanSummary() {
+        const title = "{{ plan.title }}";
+        const cals = "{{ plan.target_calories|int }}";
+        const p = "{{ plan.protein_g|int }}g";
+        const c = "{{ plan.carbs_g|int }}g";
+        const f = "{{ plan.fat_g|int }}g";
+        const text = `🥗 ${title}\n🔥 Target Energy: ${cals} kcal\n💪 Macros: Protein: ${p} | Carbs: ${c} | Fats: ${f}\nGenerated by NutriGen AI Diet Planner\nLink: ${window.location.href}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("Diet plan summary copied to clipboard!", "success");
+        }).catch(() => {
+            showToast("Failed to copy summary", "warning");
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Diet Plans | History Archive{% endblock %}
+
+{% block content %}
+<div class="history-page-container">
+    <div class="history-header glass-panel mb-4">
+        <div>
+            <h1 class="page-title"><i class="fa-solid fa-clock-rotate-left"></i> Nutrition Plans Archive</h1>
+            <p class="page-subtitle">All plans persisted in your PostgreSQL / Cloud database instance.</p>
+        </div>
+        <div>
+            <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Create New Plan
+            </a>
+        </div>
+    </div>
+
+    {% if plans and plans|length > 0 %}
+        <div class="history-grid" id="history-grid">
+            {% for p in plans %}
+            <div class="history-card glass-panel" id="plan-card-{{ p.id }}">
+                <div class="h-card-top">
+                    <div class="h-badges">
+                        {% if p.ai_generated %}
+                            <span class="badge badge-accent"><i class="fa-brands fa-google"></i> Gemini AI</span>
+                        {% else %}
+                            <span class="badge badge-primary"><i class="fa-solid fa-user-doctor"></i> Clinical</span>
+                        {% endif %}
+                        <span class="badge badge-secondary">{{ p.goal.replace('_', ' ').title() }}</span>
+                    </div>
+                    <span class="h-date">{{ p.created_at.strftime("%b %d, %Y") }}</span>
+                </div>
+
+                <h3 class="h-title">{{ p.title }}</h3>
+                <div class="h-client-meta">
+                    <i class="fa-regular fa-user"></i> {{ p.user_name }} &bull; {{ p.weight }}kg &bull; {{ p.dietary_preference.replace('_', ' ').title() }}
+                </div>
+
+                <div class="h-metrics-bar">
+                    <div class="h-metric">
+                        <span class="hm-label">Calories</span>
+                        <span class="hm-val">{{ p.target_calories|int }} <small>kcal</small></span>
+                    </div>
+                    <div class="h-metric">
+                        <span class="hm-label">Protein</span>
+                        <span class="hm-val text-protein">{{ p.protein_g|int }}g</span>
+                    </div>
+                    <div class="h-metric">
+                        <span class="hm-label">Carbs</span>
+                        <span class="hm-val text-carbs">{{ p.carbs_g|int }}g</span>
+                    </div>
+                    <div class="h-metric">
+                        <span class="hm-label">Fats</span>
+                        <span class="hm-val text-fats">{{ p.fat_g|int }}g</span>
+                    </div>
+                </div>
+
+                <div class="h-card-actions">
+                    <a href="{{ url_for('main.view_plan', plan_id=p.id) }}" class="btn btn-sm btn-outline">
+                        <i class="fa-solid fa-eye"></i> View Plan
+                    </a>
+                    <button class="btn btn-sm btn-danger-ghost" onclick="deleteSavedPlan({{ p.id }})">
+                        <i class="fa-solid fa-trash-can"></i> Delete
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state-card glass-panel text-center py-5">
+            <div class="empty-icon">
+                <i class="fa-solid fa-bowl-rice"></i>
+            </div>
+            <h3>No Diet Plans Stored Yet</h3>
+            <p>Generate your first customized clinical meal plan to save and track your transformation.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-glow">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Launch Planner Wizard
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function deleteSavedPlan(planId) {
+        if (!confirm("Are you sure you want to delete this diet plan?")) {
+            return;
+        }
+
+        try {
+            const resp = await fetch(`/api/plan/${planId}`, {
+                method: 'DELETE'
+            });
+            const data = await resp.json();
+            if (data.success) {
+                const card = document.getElementById(`plan-card-${planId}`);
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => card.remove(), 300);
+                }
+                showToast("Plan removed successfully", "success");
+            } else {
+                showToast(data.error || "Failed to delete plan", "warning");
+            }
+        } catch (err) {
+            showToast("Network error deleting plan", "warning");
+        }
+    }
+</script>
+{% endblock %}
