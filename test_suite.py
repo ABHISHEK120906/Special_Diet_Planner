@@ -72,5 +72,16 @@ class TestDietPlanner(unittest.TestCase):
             self.assertIn(b"Test 30-Day Diet Plan", view_res.data)
             print(f"[PASS] GET /plan/{data['plan_id']} passed")
 
+    def test_auth_pages(self):
+        login_res = self.client.get('/auth/login')
+        self.assertEqual(login_res.status_code, 200)
+        self.assertIn(b"Welcome back", login_res.data)
+        print("[PASS] GET /auth/login passed")
+
+        signup_res = self.client.get('/auth/signup')
+        self.assertEqual(signup_res.status_code, 200)
+        self.assertIn(b"Create your account", signup_res.data)
+        print("[PASS] GET /auth/signup passed")
+
 if __name__ == "__main__":
     unittest.main()

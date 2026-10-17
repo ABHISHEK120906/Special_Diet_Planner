@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
+from flask_login import current_user
 from app.models import db, DietPlan
 from app.services.calculator import calculate_targets, calculate_bmi
 from app.services.ai_service import generate_smart_diet_plan
@@ -59,8 +60,11 @@ def api_generate():
     try:
         data = request.get_json() or {}
         
-        # User input fields
-        user_name = data.get("user_name", "Valued Client").strip() or "Valued Client"
+        # Determine logged in user details if available
+        user_id = current_user.id if current_user.is_authenticated else None
+        default_name = current_user.name if current_user.is_authenticated else "Valued Client"
+        
+        user_name = data.get("user_name", "").strip() or default_name
         age = int(data.get("age", 25))
         gender = data.get("gender", "male")
         weight = float(data.get("weight", 70.0))
@@ -94,6 +98,7 @@ def api_generate():
         plan_id = None
         try:
             new_plan = DietPlan(
+                user_id=user_id,
                 title=custom_title,
                 user_name=user_name,
                 age=age,
@@ -150,10 +155,19 @@ def view_plan(plan_id):
 
 @main_bp.route('/history')
 def history():
-    """List all saved diet plans."""
+    """List all saved diet plans with user-specific prioritization."""
     plans = []
     try:
-        plans = DietPlan.query.order_by(DietPlan.created_at.desc()).limit(50).all()
+        if current_user.is_authenticated:
+            # Query plans created by current user
+            user_plans = DietPlan.query.filter_by(user_id=current_user.id).order_by(DietPlan.created_at.desc()).all()
+            if user_plans:
+                plans = user_plans
+            else:
+                # If user hasn't made any plans yet, show latest community plans
+                plans = DietPlan.query.order_by(DietPlan.created_at.desc()).limit(20).all()
+        else:
+            plans = DietPlan.query.order_by(DietPlan.created_at.desc()).limit(50).all()
     except Exception as e:
         print(f"Could not query history: {e}")
         flash("Database query encountered an issue or is not yet configured.", "info")

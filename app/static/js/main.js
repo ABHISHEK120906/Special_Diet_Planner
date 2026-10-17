@@ -1,13 +1,57 @@
 /**
- * AI Diet Planner - Client Logic & Reactive Wizard
+ * NutriGenAI - Client Logic & Reactive Wizard
  */
 
+// Immediate theme bootstrap before DOM loads to avoid theme flicker
+(function () {
+    try {
+        const saved = localStorage.getItem('nutrigen_theme');
+        const theme = saved || (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        document.documentElement.setAttribute('data-theme', theme);
+    } catch (e) {}
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
     initWizard();
     initRadioCards();
     initLiveCalculator();
     initFormSubmission();
 });
+
+/* ==========================================================================
+   Theme Management (Dark & Light Mode)
+   ========================================================================== */
+function initTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 
+                    localStorage.getItem('nutrigen_theme') || 'dark';
+    applyTheme(current);
+}
+
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (document.body) {
+        document.body.setAttribute('data-theme', theme);
+    }
+    try {
+        localStorage.setItem('nutrigen_theme', theme);
+    } catch (e) {}
+
+    // Update all theme icons on page (if multiple)
+    document.querySelectorAll('#themeIcon').forEach(icon => {
+        if (theme === 'light') {
+            icon.className = 'fa-solid fa-moon';
+        } else {
+            icon.className = 'fa-solid fa-sun';
+        }
+    });
+}
+
+function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    const next = current === 'dark' ? 'light' : 'dark';
+    applyTheme(next);
+}
 
 /* ==========================================================================
    Wizard Navigation
