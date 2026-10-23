@@ -7,60 +7,60 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def _build_pg8000_url(url: str):
+def _build_psycopg2_url(url: str):
     """
-    Convert a standard postgresql:// URL into a pg8000-compatible URL.
-    - Switches dialect to postgresql+pg8000://
-    - Strips query params that pg8000/SQLAlchemy don't accept in URL
-      (sslmode, channel_binding)
-    - Returns (clean_url, connect_args) tuple
+    Convert a standard postgresql:// or postgres:// URL into a
+    psycopg2-compatible URL.
+    - Switches dialect to postgresql+psycopg2://
+    - Strips query params that psycopg2/SQLAlchemy don't accept in the URL
+      (channel_binding, sslmode handled via connect_args)
+    - Returns (clean_url, connect_args, engine_options) tuple
     """
     if not url:
-        return url, {}
+        return url, {}, {}
 
-    # Fix legacy dialect prefix
+    # Normalise legacy shorthand
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
 
     parsed = urlparse(url)
     params = parse_qs(parsed.query, keep_blank_values=True)
 
-    # Determine if SSL was requested
+    # Lift SSL params out of query string
     sslmode = params.pop("sslmode", [None])[0]
-    params.pop("channel_binding", None)  # psycopg3-only, not understood by pg8000
+    params.pop("channel_binding", None)   # psycopg3-only, ignored by psycopg2
 
-    # Rebuild URL with pg8000 dialect, clean query string
+    # Rebuild URL with psycopg2 dialect
     clean_query = urlencode({k: v[0] for k, v in params.items()})
-    pg8000_url = urlunparse(parsed._replace(
-        scheme="postgresql+pg8000",
+    pg_url = urlunparse(parsed._replace(
+        scheme="postgresql+psycopg2",
         query=clean_query
     ))
 
-    # SSL connect_args for pg8000
     connect_args = {}
-    if sslmode == "require":
-        ssl_ctx = ssl.create_default_context()
-        ssl_ctx.check_hostname = False
-        ssl_ctx.verify_mode = ssl.CERT_NONE
-        connect_args["ssl_context"] = ssl_ctx
+    if sslmode in ("require", "verify-ca", "verify-full"):
+        connect_args["sslmode"] = sslmode
 
-    return pg8000_url, connect_args
+    engine_options = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,
+    }
+    if connect_args:
+        engine_options["connect_args"] = connect_args
+
+    return pg_url, connect_args, engine_options
 
 
 class Config:
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "special-diet-planner-fallback-secret-2026")
 
-    # Database URL — build for pg8000 or fall back to SQLite
+    # Database URL — build for psycopg2 or fall back to SQLite
     raw_db_url = os.getenv("DATABASE_URL", "").strip()
 
     if raw_db_url:
-        _pg_url, _ssl_args = _build_pg8000_url(raw_db_url)
+        _pg_url, _ssl_args, _engine_opts = _build_psycopg2_url(raw_db_url)
         SQLALCHEMY_DATABASE_URI = _pg_url
-        SQLALCHEMY_ENGINE_OPTIONS = {
-            "pool_pre_ping": True,
-            "pool_recycle": 300,
-            "connect_args": _ssl_args,
-        }
+        SQLALCHEMY_ENGINE_OPTIONS = _engine_opts
     else:
         # Vercel /tmp or local file-based SQLite fallback
         if os.getenv("VERCEL"):

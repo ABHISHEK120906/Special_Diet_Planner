@@ -86,6 +86,28 @@
     --glow-2-color: rgba(6, 182, 212, 0.12);
 
     --auth-brand-bg: linear-gradient(145deg, #dcfce7 0%, #d1fae5 50%, #a7f3d0 100%);
+
+    /* Extra light-mode overrides */
+    --heading-color: #0f172a;
+    --card-heading: #1e293b;
+    --step-line-bg: rgba(0, 0, 0, 0.10);
+    --summary-bg: rgba(15, 23, 42, 0.04);
+    --summary-border: rgba(0, 0, 0, 0.07);
+    --sm-val-color: #1e293b;
+    --chip-bg: rgba(0, 0, 0, 0.06);
+    --chip-border: rgba(0, 0, 0, 0.10);
+}
+
+/* Dark theme extra variables */
+[data-theme="dark"], :root {
+    --heading-color: #fff;
+    --card-heading: #fff;
+    --step-line-bg: rgba(255, 255, 255, 0.08);
+    --summary-bg: rgba(0, 0, 0, 0.18);
+    --summary-border: rgba(255, 255, 255, 0.05);
+    --sm-val-color: #fff;
+    --chip-bg: rgba(255, 255, 255, 0.08);
+    --chip-border: rgba(255, 255, 255, 0.12);
 }
 
 
@@ -335,7 +357,7 @@ a {
     font-size: 2.8rem;
     line-height: 1.15;
     margin-bottom: 1rem;
-    color: #fff;
+    color: var(--heading-color);
 }
 .gradient-text {
     background: linear-gradient(135deg, #34d399 0%, #38bdf8 100%);
@@ -415,7 +437,7 @@ a {
 .step-line {
     flex: 1;
     height: 2px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--step-line-bg);
     margin: 0 0.75rem;
 }
 
@@ -436,7 +458,7 @@ a {
 }
 .pane-header h3 {
     font-size: 1.35rem;
-    color: #fff;
+    color: var(--card-heading);
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -554,7 +576,7 @@ a {
 .card-title {
     font-size: 0.98rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--card-heading);
     letter-spacing: -0.01em;
 }
 .card-desc {
@@ -695,16 +717,16 @@ a {
 .sm-val {
     font-size: 1.05rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--sm-val-color);
 }
 .summary-feature-list {
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
-    background: rgba(0, 0, 0, 0.18);
+    background: var(--summary-bg);
     padding: 0.9rem 1.1rem;
     border-radius: var(--radius-md);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--summary-border);
 }
 .feat-item {
     font-size: 0.88rem;
@@ -755,16 +777,16 @@ a {
     box-shadow: 0 1px 0 #047857, 0 4px 10px var(--primary-glow), inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--chip-bg);
     color: var(--text-main);
     border: 1px solid var(--border-color);
-    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.12);
-    color: #fff;
+    background: var(--bg-card-hover);
+    color: var(--text-main);
     transform: translateY(-2px);
-    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 .btn-secondary:active {
     transform: translateY(2px);
@@ -3322,3 +3344,206 @@ a {
         page-break-inside: avoid;
     }
 }
+
+/* ==========================================================================
+   Floating Theme Toggle FAB (Dark / Light Mode Switch)
+   ========================================================================== */
+
+.theme-fab {
+    position: fixed;
+    bottom: 1.75rem;
+    right: 1.75rem;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+
+    background: var(--bg-card);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    color: var(--text-main);
+    font-size: 1.1rem;
+    cursor: pointer;
+
+    box-shadow:
+        0 8px 24px -4px rgba(0, 0, 0, 0.35),
+        0 2px 8px rgba(0, 0, 0, 0.20),
+        inset 0 1px 1px rgba(255, 255, 255, 0.12);
+
+    transition:
+        transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.28s ease,
+        background 0.3s ease,
+        border-color 0.3s ease;
+
+    /* Prevent text selection on rapid clicks */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.theme-fab:hover {
+    transform: translateY(-4px) scale(1.08);
+    box-shadow:
+        0 16px 36px -6px rgba(0, 0, 0, 0.45),
+        0 4px 12px rgba(16, 185, 129, 0.25),
+        inset 0 1px 2px rgba(255, 255, 255, 0.2);
+    border-color: var(--primary);
+    color: var(--primary-light);
+}
+
+.theme-fab:active {
+    transform: translateY(-1px) scale(0.96);
+    transition: transform 0.1s ease;
+}
+
+/* Pulsing glow ring that fires once on page load */
+.theme-fab::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--primary);
+    opacity: 0;
+    animation: fab-pulse 2.4s ease-out 1.5s 1 forwards;
+    pointer-events: none;
+}
+
+@keyframes fab-pulse {
+    0%   { opacity: 0.7; transform: scale(1); }
+    100% { opacity: 0;   transform: scale(1.55); }
+}
+
+/* Icon spin on toggle */
+.theme-fab i {
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
+}
+.theme-fab:hover i {
+    transform: rotate(22deg);
+}
+
+/* Light-theme FAB overrides */
+[data-theme="light"] .theme-fab {
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow:
+        0 8px 24px -4px rgba(15, 23, 42, 0.18),
+        0 2px 8px rgba(15, 23, 42, 0.10),
+        inset 0 1px 1px rgba(255, 255, 255, 0.9);
+    border-color: rgba(0, 0, 0, 0.10);
+    color: #0f172a;
+}
+[data-theme="light"] .theme-fab:hover {
+    box-shadow:
+        0 16px 36px -6px rgba(15, 23, 42, 0.22),
+        0 4px 12px rgba(5, 150, 105, 0.18),
+        inset 0 1px 2px rgba(255, 255, 255, 0.95);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* Tooltip label that appears above the FAB */
+.theme-fab::after {
+    content: attr(title);
+    position: absolute;
+    right: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%) translateX(6px);
+    background: var(--bg-card);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    backdrop-filter: blur(10px);
+}
+.theme-fab:hover::after {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+
+/* ==========================================================================
+   Enhanced Light-Mode Global Overrides
+   (Hero text, form labels, alerts, toasts)
+   ========================================================================== */
+
+[data-theme="light"] .hero-title {
+    color: var(--text-main);
+}
+
+[data-theme="light"] .gradient-text {
+    background: linear-gradient(135deg, #059669 0%, #0284c7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .hero-subtitle {
+    color: var(--text-muted);
+}
+
+[data-theme="light"] .alert-warning {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #92400e;
+}
+[data-theme="light"] .alert-success {
+    background: rgba(5, 150, 105, 0.10);
+    border-color: rgba(5, 150, 105, 0.3);
+    color: #065f46;
+}
+[data-theme="light"] .alert-info {
+    background: rgba(2, 132, 199, 0.10);
+    border-color: rgba(2, 132, 199, 0.3);
+    color: #0c4a6e;
+}
+
+[data-theme="light"] .logo-title .accent {
+    background: linear-gradient(135deg, #059669 0%, #0284c7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .step-num {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .form-label {
+    color: #0f172a;
+}
+
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select {
+    color: #0f172a;
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .form-input::placeholder {
+    color: #94a3b8;
+}
+
+[data-theme="light"] .toast {
+    background: #ffffff;
+    color: #0f172a;
+    border-color: rgba(0, 0, 0, 0.10);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+}
+
+[data-theme="light"] .badge {
+    background: rgba(5, 150, 105, 0.10);
+    color: #065f46;
+    border: 1px solid rgba(5, 150, 105, 0.25);
+}
+
