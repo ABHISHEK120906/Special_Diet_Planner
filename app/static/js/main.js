@@ -222,6 +222,16 @@ function updatePreviewUI(targets) {
     const waterEl = document.getElementById('preview-water');
     if (waterEl) waterEl.innerText = `${targets.water_liters}L`;
 
+    // Step 4 3D Summary Card Elements
+    const sumCalEl = document.getElementById('summary-preview-cals');
+    if (sumCalEl) sumCalEl.innerText = `${targets.calorie_target.toLocaleString()} kcal`;
+
+    const sumProtEl = document.getElementById('summary-preview-protein');
+    if (sumProtEl) sumProtEl.innerText = `${targets.protein_g}g`;
+
+    const sumWaterEl = document.getElementById('summary-preview-water');
+    if (sumWaterEl) sumWaterEl.innerText = `${targets.water_liters} Liters`;
+
     const pEl = document.getElementById('preview-protein');
     if (pEl) pEl.innerText = `${targets.protein_g}g`;
     const pPct = document.getElementById('preview-protein-pct');
@@ -281,36 +291,58 @@ function computeLocalTargets(weight, height, age, gender, activity, goal) {
    ========================================================================== */
 function initFormSubmission() {
     const form = document.getElementById('diet-wizard-form');
+    const submitBtn = document.getElementById('generate-submit-btn');
     if (!form) return;
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const executeSubmission = async (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Validate essentials before launching generation
+        const ageInput = document.getElementById('age');
+        const weightInput = document.getElementById('weight');
+        const heightInput = document.getElementById('height');
+
+        const age = parseInt(ageInput?.value) || 0;
+        const weight = parseFloat(weightInput?.value) || 0;
+        const height = parseFloat(heightInput?.value) || 0;
+
+        if (age < 14 || age > 100 || weight < 30 || weight > 300 || height < 100 || height > 250) {
+            goToStep(1);
+            showToast("Please enter valid vitals (Age, Weight, Height) in Step 1.", "warning");
+            if (age < 14 || age > 100) ageInput?.focus();
+            else if (weight < 30 || weight > 300) weightInput?.focus();
+            else heightInput?.focus();
+            return;
+        }
 
         const overlay = document.getElementById('loading-overlay');
         const statusDesc = document.getElementById('loading-status-desc');
-        overlay.classList.add('active');
+        if (overlay) overlay.classList.add('active');
 
         // Form data extraction
         const formData = new FormData(form);
         const payload = {
-            user_name: formData.get('user_name') || 'Guest',
-            age: parseInt(formData.get('age')) || 25,
-            gender: formData.get('gender') || 'male',
-            weight: parseFloat(formData.get('weight')) || 70,
+            user_name: (formData.get('user_name') || 'Guest').toString().trim(),
+            age: age || 25,
+            gender: (formData.get('gender') || 'male').toString(),
+            weight: weight || 70,
             target_weight: formData.get('target_weight') ? parseFloat(formData.get('target_weight')) : null,
-            height: parseFloat(formData.get('height')) || 170,
-            activity_level: formData.get('activity_level') || 'moderately_active',
-            goal: formData.get('goal') || 'weight_loss',
-            dietary_preference: formData.get('dietary_preference') || 'vegetarian',
-            allergies: formData.get('allergies') || '',
-            title: formData.get('title') || 'Personalized AI Diet Plan',
-            gemini_api_key: formData.get('gemini_api_key') || ''
+            height: height || 170,
+            activity_level: (formData.get('activity_level') || 'moderately_active').toString(),
+            goal: (formData.get('goal') || 'weight_loss').toString(),
+            dietary_preference: (formData.get('dietary_preference') || 'vegetarian').toString(),
+            allergies: (formData.get('allergies') || '').toString(),
+            title: (formData.get('title') || 'Personalized AI Diet Plan').toString(),
+            gemini_api_key: ''
         };
 
         // Loading message transitions
         const stepMessages = [
             "Calculating BMR, TDEE, and optimal macronutrient split...",
-            "Consulting Gemini AI & nutrition database for personalized meals...",
+            "Consulting clinical database & recipe architecture...",
             "Formulating bioavailability tips, grocery items, and hydration schedule..."
         ];
 
@@ -318,7 +350,7 @@ function initFormSubmission() {
         const msgInterval = setInterval(() => {
             msgIndex = (msgIndex + 1) % stepMessages.length;
             if (statusDesc) statusDesc.innerText = stepMessages[msgIndex];
-        }, 2200);
+        }, 1800);
 
         try {
             const resp = await fetch('/api/generate', {
@@ -331,25 +363,25 @@ function initFormSubmission() {
             const data = await resp.json();
 
             if (data.success) {
-                if (data.redirect_url) {
-                    window.location.href = data.redirect_url;
-                } else {
-                    // Fallback render if database was offline
-                    overlay.classList.remove('active');
-                    showToast("Plan generated successfully! (Stateless Mode)", "success");
-                    sessionStorage.setItem('current_plan', JSON.stringify(data));
-                    window.location.reload();
-                }
+                const targetUrl = data.redirect_url || (data.plan_id ? `/plan/${data.plan_id}` : '/plan/latest');
+                window.location.href = targetUrl;
             } else {
-                overlay.classList.remove('active');
+                if (overlay) overlay.classList.remove('active');
                 showToast(data.error || "Generation error. Please check inputs.", "warning");
             }
         } catch (err) {
             clearInterval(msgInterval);
-            overlay.classList.remove('active');
+            if (overlay) overlay.classList.remove('active');
             showToast("Server connection error: " + err.message, "warning");
         }
-    });
+    };
+
+    form.addEventListener('submit', executeSubmission);
+    if (submitBtn) {
+        submitBtn.addEventListener('click', (e) => {
+            executeSubmission(e);
+        });
+    }
 }
 
 /* ==========================================================================

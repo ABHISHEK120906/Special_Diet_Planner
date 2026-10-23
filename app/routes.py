@@ -1,10 +1,26 @@
-from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash, current_app, session
 from flask_login import current_user
 from app.models import db, DietPlan
 from app.services.calculator import calculate_targets, calculate_bmi
 from app.services.ai_service import generate_smart_diet_plan
 
 main_bp = Blueprint('main', __name__)
+
+def _safe_float(val, default=0.0):
+    try:
+        if val is None or str(val).strip() == "":
+            return default
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
+def _safe_int(val, default=0):
+    try:
+        if val is None or str(val).strip() == "":
+            return default
+        return int(float(val))
+    except (ValueError, TypeError):
+        return default
 
 @main_bp.route('/')
 def index():
@@ -33,13 +49,13 @@ def api_calculate():
     """Real-time calculation endpoint for instant live-preview as user types."""
     try:
         data = request.get_json() or {}
-        weight = float(data.get("weight", 70))
-        height = float(data.get("height", 170))
-        age = int(data.get("age", 25))
-        gender = data.get("gender", "male")
-        activity = data.get("activity_level", "moderately_active")
-        goal = data.get("goal", "weight_loss")
-        dietary_pref = data.get("dietary_preference", "vegetarian")
+        weight = _safe_float(data.get("weight"), 70.0)
+        height = _safe_float(data.get("height"), 170.0)
+        age = _safe_int(data.get("age"), 25)
+        gender = str(data.get("gender") or "male").strip().lower()
+        activity = str(data.get("activity_level") or "moderately_active").strip().lower()
+        goal = str(data.get("goal") or "weight_loss").strip().lower()
+        dietary_pref = str(data.get("dietary_preference") or "vegetarian").strip().lower()
         
         targets = calculate_targets(
             weight_kg=weight,
@@ -64,20 +80,21 @@ def api_generate():
         user_id = current_user.id if current_user.is_authenticated else None
         default_name = current_user.name if current_user.is_authenticated else "Valued Client"
         
-        user_name = data.get("user_name", "").strip() or default_name
-        age = int(data.get("age", 25))
-        gender = data.get("gender", "male")
-        weight = float(data.get("weight", 70.0))
-        target_weight = float(data.get("target_weight")) if data.get("target_weight") else None
-        height = float(data.get("height", 170.0))
-        activity_level = data.get("activity_level", "moderately_active")
-        goal = data.get("goal", "weight_loss")
-        dietary_preference = data.get("dietary_preference", "vegetarian")
-        allergies = data.get("allergies", "").strip()
-        custom_title = data.get("title", f"{user_name}'s {goal.title().replace('_', ' ')} Plan")
+        user_name = str(data.get("user_name") or "").strip() or default_name
+        age = _safe_int(data.get("age"), 25)
+        gender = str(data.get("gender") or "male").strip().lower()
+        weight = _safe_float(data.get("weight"), 70.0)
+        target_weight_raw = data.get("target_weight")
+        target_weight = _safe_float(target_weight_raw, None) if target_weight_raw not in (None, "", "null") else None
+        height = _safe_float(data.get("height"), 170.0)
+        activity_level = str(data.get("activity_level") or "moderately_active").strip().lower()
+        goal = str(data.get("goal") or "weight_loss").strip().lower()
+        dietary_preference = str(data.get("dietary_preference") or "vegetarian").strip().lower()
+        allergies = str(data.get("allergies") or "").strip()
+        custom_title = str(data.get("title") or f"{user_name}'s {goal.title().replace('_', ' ')} Plan").strip()
         
         # Check custom API key sent from UI, fallback to server config
-        custom_key = data.get("gemini_api_key", "").strip() or current_app.config.get("GEMINI_API_KEY", "")
+        custom_key = str(data.get("gemini_api_key") or "").strip() or current_app.config.get("GEMINI_API_KEY", "")
         
         profile = {
             "user_name": user_name,
@@ -93,6 +110,29 @@ def api_generate():
         }
         
         targets, plan_data, is_ai = generate_smart_diet_plan(profile, api_key=custom_key)
+        
+        # Store in session as guaranteed fallback so user always sees their plan
+        session['latest_plan'] = {
+            "title": custom_title,
+            "user_name": user_name,
+            "age": age,
+            "gender": gender,
+            "weight": weight,
+            "target_weight": target_weight,
+            "height": height,
+            "activity_level": activity_level,
+            "goal": goal,
+            "dietary_preference": dietary_preference,
+            "allergies": allergies,
+            "bmr": targets["bmr"],
+            "tdee": targets["tdee"],
+            "target_calories": targets["calorie_target"],
+            "protein_g": targets["protein_g"],
+            "carbs_g": targets["carbs_g"],
+            "fat_g": targets["fat_g"],
+            "ai_generated": is_ai,
+            "plan_data": plan_data
+        }
         
         # Save to Database with graceful failure handling
         plan_id = None
@@ -125,7 +165,9 @@ def api_generate():
             plan_id = new_plan.id
         except Exception as db_err:
             db.session.rollback()
-            print(f"INFO: Database save bypassed or failed ({db_err}). Proceeding in stateless mode.")
+            print(f"INFO: Database save bypassed or failed ({db_err}). Proceeding with session fallback.")
+            
+        redirect_url = f"/plan/{plan_id}" if plan_id else "/plan/latest"
             
         return jsonify({
             "success": True,
@@ -133,12 +175,52 @@ def api_generate():
             "is_ai_generated": is_ai,
             "targets": targets,
             "plan_data": plan_data,
-            "redirect_url": f"/plan/{plan_id}" if plan_id else None
+            "redirect_url": redirect_url
         })
         
     except Exception as e:
         print(f"Error in api_generate: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@main_bp.route('/plan/latest')
+def view_latest_plan():
+    """Render latest generated plan from session or recent database record."""
+    from datetime import datetime, timezone
+    plan_dict = session.get('latest_plan')
+    if plan_dict:
+        dummy_plan = DietPlan(
+            title=plan_dict.get("title", "My Personalized Diet Plan"),
+            user_name=plan_dict.get("user_name", "Valued Client"),
+            age=plan_dict.get("age", 25),
+            gender=plan_dict.get("gender", "male"),
+            weight=plan_dict.get("weight", 70),
+            target_weight=plan_dict.get("target_weight"),
+            height=plan_dict.get("height", 170),
+            activity_level=plan_dict.get("activity_level", "moderately_active"),
+            goal=plan_dict.get("goal", "weight_loss"),
+            dietary_preference=plan_dict.get("dietary_preference", "vegetarian"),
+            allergies=plan_dict.get("allergies", ""),
+            bmr=plan_dict.get("bmr", 1600),
+            tdee=plan_dict.get("tdee", 2200),
+            target_calories=plan_dict.get("target_calories", 2000),
+            protein_g=plan_dict.get("protein_g", 150),
+            carbs_g=plan_dict.get("carbs_g", 200),
+            fat_g=plan_dict.get("fat_g", 55),
+            ai_generated=plan_dict.get("ai_generated", False)
+        )
+        dummy_plan.created_at = datetime.now(timezone.utc)
+        dummy_plan.set_plan_data(plan_dict.get("plan_data", {}))
+        return render_template('plan.html', plan=dummy_plan)
+        
+    try:
+        latest = db.session.query(DietPlan).order_by(DietPlan.id.desc()).first()
+        if latest:
+            return redirect(url_for('main.view_plan', plan_id=latest.id))
+    except Exception:
+        pass
+        
+    flash("No recent plan found. Please generate a new plan.", "info")
+    return redirect(url_for('main.index'))
 
 @main_bp.route('/plan/<int:plan_id>')
 def view_plan(plan_id):

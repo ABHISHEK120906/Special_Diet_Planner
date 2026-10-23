@@ -36,11 +36,11 @@
             <div class="step-line"></div>
             <div class="step-indicator" data-step="4">
                 <div class="step-num">4</div>
-                <div class="step-label">AI Engine</div>
+                <div class="step-label">Review & Plan</div>
             </div>
         </div>
 
-        <form id="diet-wizard-form" autocomplete="off">
+        <form id="diet-wizard-form" autocomplete="off" novalidate>
             <!-- STEP 1: Body Vitals -->
             <div class="wizard-pane active" id="pane-step-1">
                 <div class="pane-header">
@@ -292,16 +292,16 @@
                         <i class="fa-solid fa-arrow-left"></i> Back
                     </button>
                     <button type="button" class="btn btn-primary next-step-btn" data-next="4">
-                        Next: AI Engine <i class="fa-solid fa-arrow-right"></i>
+                        Next: Review & Plan <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- STEP 4: AI Engine & Generation -->
+            <!-- STEP 4: Review & Launch (No API Key Required) -->
             <div class="wizard-pane" id="pane-step-4">
                 <div class="pane-header">
-                    <h3><i class="fa-solid fa-microchip"></i> AI Engine Configuration & Launch</h3>
-                    <p>Review final settings and activate generative recipe planning.</p>
+                    <h3><i class="fa-solid fa-wand-magic-sparkles"></i> Review & AI Plan Architecture</h3>
+                    <p>Verify your clinical setup and generate your personalized nutrition schedule.</p>
                 </div>
 
                 <div class="form-grid">
@@ -313,18 +313,55 @@
                         </div>
                     </div>
 
+                    <!-- 3D Plan Summary Showcase Card -->
                     <div class="form-group full-width">
-                        <div class="api-key-banner">
-                            <div class="api-key-header">
-                                <div class="badge-gemini"><i class="fa-brands fa-google"></i> Google Gemini AI</div>
-                                <span class="badge badge-success">Optional & Auto-Fallback</span>
+                        <div class="plan-summary-3d-card glass-panel-3d">
+                            <div class="summary-card-header">
+                                <div class="engine-badge-3d">
+                                    <div class="engine-glow-dot"></div>
+                                    <i class="fa-solid fa-shield-halved"></i>
+                                    <span>Clinical Precision Intelligence</span>
+                                </div>
+                                <span class="badge badge-success-glow"><i class="fa-solid fa-check-double"></i> Zero-Error Calibrated</span>
                             </div>
-                            <p class="api-key-desc">
-                                If you have a free Google Gemini API Key, paste it below for tailored culinary creativity. If left empty, our built-in <strong>Clinical Nutrition Engine</strong> will automatically generate your structured plan with zero error.
-                            </p>
-                            <div class="input-with-icon mt-2">
-                                <i class="fa-solid fa-key"></i>
-                                <input type="password" id="gemini_api_key" name="gemini_api_key" placeholder="AIzaSy... (Leave blank to use server key or smart fallback)">
+
+                            <div class="summary-metrics-row">
+                                <div class="summary-mini-pill">
+                                    <div class="sm-icon cal-bg"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                                    <div class="sm-details">
+                                        <span class="sm-label">Daily Target</span>
+                                        <span class="sm-val" id="summary-preview-cals">2,050 kcal</span>
+                                    </div>
+                                </div>
+                                <div class="summary-mini-pill">
+                                    <div class="sm-icon prot-bg"><i class="fa-solid fa-dna"></i></div>
+                                    <div class="sm-details">
+                                        <span class="sm-label">Protein Target</span>
+                                        <span class="sm-val" id="summary-preview-protein">180g</span>
+                                    </div>
+                                </div>
+                                <div class="summary-mini-pill">
+                                    <div class="sm-icon water-bg"><i class="fa-solid fa-droplet"></i></div>
+                                    <div class="sm-details">
+                                        <span class="sm-label">Daily Hydration</span>
+                                        <span class="sm-val" id="summary-preview-water">2.6 Liters</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="summary-feature-list">
+                                <div class="feat-item">
+                                    <i class="fa-solid fa-circle-check text-success"></i>
+                                    <span>5 Scheduled feed windows with exact gram portion weights</span>
+                                </div>
+                                <div class="feat-item">
+                                    <i class="fa-solid fa-circle-check text-success"></i>
+                                    <span>Bioavailability cooking techniques & glycemic index moderation</span>
+                                </div>
+                                <div class="feat-item">
+                                    <i class="fa-solid fa-circle-check text-success"></i>
+                                    <span>Automated categorized weekly grocery shopping checklist</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -334,7 +371,7 @@
                     <button type="button" class="btn btn-secondary prev-step-btn" data-prev="3">
                         <i class="fa-solid fa-arrow-left"></i> Back
                     </button>
-                    <button type="submit" id="generate-submit-btn" class="btn btn-accent btn-glow">
+                    <button type="submit" id="generate-submit-btn" class="btn btn-accent btn-3d btn-glow">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Generate AI Diet Plan
                     </button>
                 </div>

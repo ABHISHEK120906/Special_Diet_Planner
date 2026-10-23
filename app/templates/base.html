@@ -40,12 +40,15 @@
     <header class="navbar-wrapper">
         <nav class="navbar container">
             <a href="{{ url_for('main.index') }}" class="brand-logo">
-                <div class="logo-icon">
-                    <i class="fa-solid fa-seedling"></i>
+                <div class="logo-icon-3d">
+                    <div class="logo-icon-core">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div class="logo-glow-ring"></div>
                 </div>
                 <div class="logo-text">
                     <span class="logo-title">NutriGen<span class="accent">AI</span></span>
-                    <span class="logo-sub">Special Diet Planner</span>
+                    <span class="logo-sub">Precision Nutrition</span>
                 </div>
             </a>
 
@@ -120,8 +123,13 @@
     <footer class="footer container">
         <div class="footer-content">
             <div class="footer-brand">
-                <span class="logo-title">NutriGen<span class="accent">AI</span></span>
-                <p>Intelligent, clinical-grade personalized meal architecture tailored to your biology and goals.</p>
+                <div class="footer-logo-row">
+                    <div class="logo-icon-3d sm">
+                        <div class="logo-icon-core"><i class="fa-solid fa-leaf"></i></div>
+                    </div>
+                    <span class="logo-title">NutriGen<span class="accent">AI</span></span>
+                </div>
+                <p>Clinical-grade personalized meal architecture tailored to your unique biology, goals, and lifestyle.</p>
             </div>
             <div class="footer-tags">
                 <span class="badge"><i class="fa-brands fa-python"></i> Python & Flask</span>

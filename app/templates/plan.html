@@ -1,156 +1,300 @@
 {% extends "base.html" %}
 
-{% block title %}{{ plan.title }} | AI Diet Plan{% endblock %}
+{% block title %}{{ plan.title }} | Clinical AI Diet Plan{% endblock %}
 
 {% block content %}
-<div class="plan-view-container">
-    <!-- Top Action Banner -->
-    <div class="plan-header-banner glass-panel">
-        <div class="plan-meta-left">
-            <div class="plan-badges-row">
-                {% if plan.ai_generated %}
-                    <span class="badge badge-accent"><i class="fa-brands fa-google"></i> Gemini AI Tailored</span>
-                {% else %}
-                    <span class="badge badge-primary"><i class="fa-solid fa-user-doctor"></i> Clinical Nutrition Engine</span>
-                {% endif %}
-                <span class="badge badge-secondary"><i class="fa-solid fa-bullseye"></i> {{ plan.goal.replace('_', ' ').title() }}</span>
-                <span class="badge badge-outline"><i class="fa-solid fa-leaf"></i> {{ plan.dietary_preference.replace('_', ' ').title() }}</span>
+<div class="plan-view-container pro-dashboard">
+    <!-- Top Executive Command Center Banner -->
+    <div class="pro-header-banner glass-panel-3d">
+        <div class="pro-header-main">
+            <!-- Client Avatar & Status -->
+            <div class="pro-client-profile">
+                <div class="pro-avatar-ring">
+                    <div class="pro-avatar">{{ plan.user_name[0].upper() if plan.user_name else 'C' }}</div>
+                    <span class="pro-badge-check" title="Clinically Calibrated"><i class="fa-solid fa-check"></i></span>
+                </div>
+                <div class="pro-client-info">
+                    <div class="pro-badge-row">
+                        {% if plan.ai_generated %}
+                            <span class="badge badge-accent"><i class="fa-solid fa-brain"></i> AI Chef Tailored</span>
+                        {% else %}
+                            <span class="badge badge-primary"><i class="fa-solid fa-user-doctor"></i> Clinical Nutrition Engine</span>
+                        {% endif %}
+                        <span class="badge badge-secondary"><i class="fa-solid fa-bullseye"></i> {{ plan.goal.replace('_', ' ').title() }}</span>
+                        <span class="badge badge-outline"><i class="fa-solid fa-leaf"></i> {{ plan.dietary_preference.replace('_', ' ').title() }}</span>
+                    </div>
+                    <h1 class="plan-main-title">{{ plan.title }}</h1>
+                    <div class="pro-meta-chips">
+                        <span class="pro-meta-chip"><i class="fa-regular fa-user"></i> {{ plan.user_name }}</span>
+                        <span class="pro-meta-chip"><i class="fa-solid fa-weight-scale"></i> {{ plan.weight }} kg{% if plan.target_weight %} &rarr; {{ plan.target_weight }} kg{% endif %}</span>
+                        <span class="pro-meta-chip"><i class="fa-solid fa-ruler-vertical"></i> {{ plan.height }} cm</span>
+                        <span class="pro-meta-chip"><i class="fa-solid fa-calendar-day"></i> {{ plan.created_at.strftime("%B %d, %Y") }}</span>
+                    </div>
+                </div>
             </div>
-            <h1 class="plan-main-title">{{ plan.title }}</h1>
-            <p class="plan-subtitle">
-                Engineered for <strong>{{ plan.user_name }}</strong> (Age: {{ plan.age }} | Weight: {{ plan.weight }}kg | Height: {{ plan.height }}cm)
-                &bull; Created on {{ plan.created_at.strftime("%B %d, %Y") }}
-            </p>
-        </div>
 
-        <div class="plan-actions-right no-print">
-            <button class="btn btn-secondary" onclick="window.print()">
-                <i class="fa-solid fa-print"></i> Print / Save PDF
-            </button>
-            <button class="btn btn-secondary" id="copy-summary-btn" onclick="copyPlanSummary()">
-                <i class="fa-solid fa-copy"></i> Copy Summary
-            </button>
-            <a href="{{ url_for('main.index') }}" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> New Plan
-            </a>
-        </div>
-    </div>
-
-    <!-- Metric Dashboard Grid -->
-    <div class="plan-vitals-grid">
-        <div class="vital-card glass-panel highlight-card">
-            <div class="vital-icon icon-calories">
-                <i class="fa-solid fa-fire-flame-curved"></i>
-            </div>
-            <div class="vital-details">
-                <span class="v-label">Target Energy</span>
-                <span class="v-val">{{ plan.target_calories|int }} <small>kcal</small></span>
-                <span class="v-context">BMR: {{ plan.bmr|int }} | TDEE: {{ plan.tdee|int }}</span>
-            </div>
-        </div>
-
-        <div class="vital-card glass-panel">
-            <div class="vital-icon icon-protein">
-                <i class="fa-solid fa-drumstick-bite"></i>
-            </div>
-            <div class="vital-details">
-                <span class="v-label">Protein Target</span>
-                <span class="v-val text-protein">{{ plan.protein_g|int }}g</span>
-                <span class="v-context">~{{ ((plan.protein_g * 4 / plan.target_calories) * 100)|int }}% of energy</span>
-            </div>
-        </div>
-
-        <div class="vital-card glass-panel">
-            <div class="vital-icon icon-carbs">
-                <i class="fa-solid fa-wheat-awn"></i>
-            </div>
-            <div class="vital-details">
-                <span class="v-label">Complex Carbs</span>
-                <span class="v-val text-carbs">{{ plan.carbs_g|int }}g</span>
-                <span class="v-context">~{{ ((plan.carbs_g * 4 / plan.target_calories) * 100)|int }}% of energy</span>
-            </div>
-        </div>
-
-        <div class="vital-card glass-panel">
-            <div class="vital-icon icon-fats">
-                <i class="fa-solid fa-seedling"></i>
-            </div>
-            <div class="vital-details">
-                <span class="v-label">Healthy Fats</span>
-                <span class="v-val text-fats">{{ plan.fat_g|int }}g</span>
-                <span class="v-context">~{{ ((plan.fat_g * 9 / plan.target_calories) * 100)|int }}% of energy</span>
+            <!-- Action Toolbar -->
+            <div class="pro-actions-toolbar no-print">
+                <button class="btn btn-secondary btn-3d" onclick="window.print()" title="Download PDF or Print">
+                    <i class="fa-solid fa-file-pdf text-danger"></i> Print / PDF
+                </button>
+                <button class="btn btn-secondary btn-3d" id="copy-summary-btn" onclick="copyPlanSummary()" title="Copy Plan to Clipboard">
+                    <i class="fa-solid fa-copy text-accent"></i> Copy Summary
+                </button>
+                <button class="btn btn-secondary btn-3d" onclick="copyGroceryList()" title="Copy Grocery List">
+                    <i class="fa-solid fa-cart-shopping text-success"></i> Copy Groceries
+                </button>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary btn-3d">
+                    <i class="fa-solid fa-plus"></i> New Plan
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Nutrition Rationale & Clinical Tips -->
+    <!-- Macro Architecture & Energy Dial Dashboard -->
+    <div class="pro-analytics-grid">
+        <!-- Energy Dial Card -->
+        <div class="pro-energy-card glass-panel-3d">
+            <div class="card-super-header">
+                <span class="super-label"><i class="fa-solid fa-fire-flame-curved text-amber"></i> Daily Caloric Target</span>
+                <span class="badge-pill-glow">Precision Calibrated</span>
+            </div>
+            <div class="energy-radial-box">
+                <div class="energy-main-number">
+                    <span class="e-cals">{{ plan.target_calories|int }}</span>
+                    <span class="e-unit">kcal / day</span>
+                </div>
+                <div class="energy-sub-breakdown">
+                    <div class="e-stat-chip">
+                        <span class="lbl">BMR (Basal)</span>
+                        <span class="val">{{ plan.bmr|int }} kcal</span>
+                    </div>
+                    <div class="e-divider"></div>
+                    <div class="e-stat-chip">
+                        <span class="lbl">TDEE (Burn)</span>
+                        <span class="val">{{ plan.tdee|int }} kcal</span>
+                    </div>
+                    <div class="e-divider"></div>
+                    <div class="e-stat-chip">
+                        <span class="lbl">Energy Delta</span>
+                        <span class="val {% if plan.target_calories < plan.tdee %}text-protein{% else %}text-success{% endif %}">
+                            {{ (plan.target_calories - plan.tdee)|int }} kcal
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 Macro Pillars -->
+        <div class="pro-macro-card glass-panel-3d">
+            <div class="card-super-header">
+                <span class="super-label"><i class="fa-solid fa-chart-pie"></i> Targeted Macro Partitioning</span>
+                <span class="macro-total-cals">100% Balanced</span>
+            </div>
+
+            <div class="pro-macro-bars-stack">
+                <!-- Protein -->
+                {% set prot_pct = ((plan.protein_g * 4 / plan.target_calories) * 100)|round|int %}
+                <div class="pro-macro-row protein-row">
+                    <div class="macro-row-top">
+                        <div class="macro-row-name">
+                            <span class="macro-dot protein-dot"></span>
+                            <strong>Protein</strong>
+                            <span class="macro-tag">Tissue & Metabolism</span>
+                        </div>
+                        <div class="macro-row-vals">
+                            <span class="macro-gram text-protein">{{ plan.protein_g|int }}g</span>
+                            <span class="macro-subval">({{ (plan.protein_g * 4)|int }} kcal • {{ prot_pct }}%)</span>
+                        </div>
+                    </div>
+                    <div class="pro-progress-track">
+                        <div class="pro-progress-fill protein-fill" style="width: {{ prot_pct }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Carbs -->
+                {% set carb_pct = ((plan.carbs_g * 4 / plan.target_calories) * 100)|round|int %}
+                <div class="pro-macro-row carbs-row">
+                    <div class="macro-row-top">
+                        <div class="macro-row-name">
+                            <span class="macro-dot carbs-dot"></span>
+                            <strong>Complex Carbs</strong>
+                            <span class="macro-tag">Sustained Glycemic Flow</span>
+                        </div>
+                        <div class="macro-row-vals">
+                            <span class="macro-gram text-carbs">{{ plan.carbs_g|int }}g</span>
+                            <span class="macro-subval">({{ (plan.carbs_g * 4)|int }} kcal • {{ carb_pct }}%)</span>
+                        </div>
+                    </div>
+                    <div class="pro-progress-track">
+                        <div class="pro-progress-fill carbs-fill" style="width: {{ carb_pct }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Fats -->
+                {% set fat_pct = ((plan.fat_g * 9 / plan.target_calories) * 100)|round|int %}
+                <div class="pro-macro-row fats-row">
+                    <div class="macro-row-top">
+                        <div class="macro-row-name">
+                            <span class="macro-dot fats-dot"></span>
+                            <strong>Healthy Fats</strong>
+                            <span class="macro-tag">Hormone & Cellular</span>
+                        </div>
+                        <div class="macro-row-vals">
+                            <span class="macro-gram text-fats">{{ plan.fat_g|int }}g</span>
+                            <span class="macro-subval">({{ (plan.fat_g * 9)|int }} kcal • {{ fat_pct }}%)</span>
+                        </div>
+                    </div>
+                    <div class="pro-progress-track">
+                        <div class="pro-progress-fill fats-fill" style="width: {{ fat_pct }}%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Hydration Deck -->
+        <div class="pro-hydration-card glass-panel-3d">
+            <div class="card-super-header">
+                <span class="super-label"><i class="fa-solid fa-droplet text-accent"></i> Daily Hydration Protocol</span>
+                <span class="badge badge-accent">Optimal Cellular Flush</span>
+            </div>
+            <div class="hydration-inner">
+                <div class="hydration-target-display">
+                    <span class="hydro-num" id="hydroTargetVal">{{ ((plan.weight * 0.035)|round(1)) }}</span>
+                    <span class="hydro-unit">Liters / day</span>
+                    <span class="hydro-sub">~10 glasses based on {{ plan.weight }}kg body mass</span>
+                </div>
+                <div class="hydration-interactive-tracker">
+                    <span class="tracker-hint">Click glasses to log your hydration today:</span>
+                    <div class="glass-icons-row" id="hydrationGlasses">
+                        {% for i in range(1, 11) %}
+                        <button type="button" class="glass-icon-btn" onclick="toggleWaterGlass(this, {{ i }})" title="Glass {{ i }} (250ml)">
+                            <i class="fa-solid fa-glass-water"></i>
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <div class="hydro-logged-status" id="hydroStatusText">0 of 10 glasses logged (0.0 L)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clinical Nutritionist Strategy & Doctor Protocol -->
     {% set plan_data = plan.get_plan_data() %}
     {% if plan_data.summary or plan_data.nutritionist_tips %}
-    <div class="rationale-card glass-panel mb-4">
-        <div class="rationale-header">
-            <h3><i class="fa-solid fa-clipboard-check"></i> Clinical Strategy & Nutritionist Protocol</h3>
+    <div class="pro-strategy-card glass-panel-3d mb-5">
+        <div class="strategy-card-header">
+            <div class="strategy-title-left">
+                <div class="icon-orb-pulse"><i class="fa-solid fa-user-doctor"></i></div>
+                <div>
+                    <h3>Clinical Strategy & Bioavailability Advisory</h3>
+                    <p>Evidence-based metabolic modulation protocol formulated for {{ plan.user_name }}</p>
+                </div>
+            </div>
+            <span class="badge badge-success-glow"><i class="fa-solid fa-shield-check"></i> Calibrated Standards</span>
         </div>
+
         {% if plan_data.summary %}
-            <p class="rationale-text">{{ plan_data.summary }}</p>
+        <div class="strategy-summary-callout">
+            <i class="fa-solid fa-quote-left quote-icon"></i>
+            <p>{{ plan_data.summary }}</p>
+        </div>
         {% endif %}
 
         {% if plan_data.nutritionist_tips %}
-            <div class="tips-grid">
-                {% for tip in plan_data.nutritionist_tips %}
-                    <div class="tip-pill">
-                        <i class="fa-solid fa-lightbulb text-warning"></i>
-                        <span>{{ tip }}</span>
-                    </div>
-                {% endfor %}
+        <div class="strategy-pillars-grid">
+            {% for tip in plan_data.nutritionist_tips %}
+            <div class="strategy-pillar-card">
+                <div class="pillar-icon-box">
+                    <i class="fa-solid {% if loop.index == 1 %}fa-droplet text-accent{% elif loop.index == 2 %}fa-utensils text-success{% elif loop.index == 3 %}fa-moon text-amber{% else %}fa-dumbbell text-protein{% endif %}"></i>
+                </div>
+                <div class="pillar-content">
+                    <span class="pillar-num">Protocol 0{{ loop.index }}</span>
+                    <p>{{ tip }}</p>
+                </div>
             </div>
+            {% endfor %}
+        </div>
         {% endif %}
     </div>
     {% endif %}
 
-    <!-- Daily Meal Schedule -->
-    <div class="meal-schedule-section">
-        <div class="section-heading-bar">
-            <h2><i class="fa-solid fa-utensils"></i> Precision Daily Meal Architecture</h2>
-            <span class="badge badge-outline">5 Structured Feed Windows</span>
+    <!-- Precision Daily Meal Architecture -->
+    <div class="pro-meals-section mb-5">
+        <div class="pro-section-header">
+            <div>
+                <h2><i class="fa-solid fa-utensils text-success"></i> Daily Meal Architecture</h2>
+                <p class="section-subtext">5 Synchronized feed windows formulated for steady energy and zero bloating</p>
+            </div>
+            <div class="meal-filter-tabs no-print" id="mealFilterTabs">
+                <button class="filter-tab active" onclick="filterMeals('all', this)">All Windows (5)</button>
+                <button class="filter-tab" onclick="filterMeals('Breakfast', this)">Breakfast</button>
+                <button class="filter-tab" onclick="filterMeals('Lunch', this)">Lunch</button>
+                <button class="filter-tab" onclick="filterMeals('Snack', this)">Snacks</button>
+                <button class="filter-tab" onclick="filterMeals('Dinner', this)">Dinner</button>
+            </div>
         </div>
 
-        <div class="meals-list">
+        <div class="pro-meals-list" id="mealsListContainer">
             {% for meal in plan_data.meals %}
-            <div class="meal-card glass-panel">
-                <div class="meal-card-header">
-                    <div class="meal-time-badge">
-                        <i class="fa-regular fa-clock"></i> {{ meal.time }}
+            <div class="pro-meal-card glass-panel-3d" data-meal-name="{{ meal.name }}" id="meal-card-{{ loop.index }}">
+                <div class="meal-header-row">
+                    <div class="meal-time-capsule">
+                        <i class="fa-regular fa-clock"></i>
+                        <span>{{ meal.time }}</span>
+                        <span class="window-index">Window {{ loop.index }}</span>
                     </div>
-                    <div class="meal-name-title">
-                        <span class="meal-category">{{ meal.name }}</span>
-                        <h3 class="meal-headline">{{ meal.title }}</h3>
+
+                    <div class="meal-title-block">
+                        <span class="meal-category-tag">{{ meal.name }}</span>
+                        <h3 class="meal-title-text">{{ meal.title }}</h3>
                     </div>
-                    <div class="meal-macro-chips">
-                        <span class="m-chip cal">{{ meal.calories }} kcal</span>
-                        <span class="m-chip prot">{{ meal.protein }}g P</span>
-                        <span class="m-chip carb">{{ meal.carbs }}g C</span>
-                        <span class="m-chip fat">{{ meal.fats }}g F</span>
+
+                    <div class="meal-macros-badge-group">
+                        <span class="macro-badge m-cal"><i class="fa-solid fa-fire"></i> {{ meal.calories }} kcal</span>
+                        <span class="macro-badge m-prot"><i class="fa-solid fa-dna"></i> {{ meal.protein }}g Protein</span>
+                        <span class="macro-badge m-carb"><i class="fa-solid fa-wheat-awn"></i> {{ meal.carbs }}g Carbs</span>
+                        <span class="macro-badge m-fat"><i class="fa-solid fa-seedling"></i> {{ meal.fats }}g Fats</span>
+                    </div>
+
+                    <div class="meal-eat-toggle no-print">
+                        <button type="button" class="btn-mark-eaten" onclick="toggleMealEaten({{ loop.index }})" title="Mark this meal as completed">
+                            <i class="fa-regular fa-circle-check"></i>
+                            <span>Mark Eaten</span>
+                        </button>
                     </div>
                 </div>
 
-                <div class="meal-card-body">
-                    <div class="meal-items-col">
-                        <span class="items-title"><i class="fa-solid fa-basket-shopping"></i> Ingredients & Exact Portions</span>
-                        <ul class="meal-ingredients-list">
+                <div class="meal-content-grid">
+                    <!-- Ingredients List -->
+                    <div class="meal-ingredients-panel">
+                        <span class="column-subtitle"><i class="fa-solid fa-basket-shopping text-success"></i> Ingredients & Exact Portions</span>
+                        <ul class="pro-ingredients-list">
                             {% for item in meal['items'] %}
-                                <li>
-                                    <i class="fa-solid fa-circle-check text-success"></i>
-                                    <span>{{ item }}</span>
-                                </li>
+                            <li class="ingredient-row">
+                                <label class="ingredient-check-label">
+                                    <input type="checkbox" onchange="toggleIngredient(this)">
+                                    <span class="ing-check-custom"><i class="fa-solid fa-check"></i></span>
+                                    <span class="ing-text">{{ item }}</span>
+                                </label>
+                            </li>
                             {% endfor %}
                         </ul>
                     </div>
 
+                    <!-- Culinary Bioavailability Box -->
                     {% if meal.recipe_notes %}
-                    <div class="meal-notes-col">
-                        <div class="prep-note-box">
-                            <span class="prep-title"><i class="fa-solid fa-fire-burner"></i> Culinary Technique & Bioavailability</span>
-                            <p>{{ meal.recipe_notes }}</p>
+                    <div class="meal-culinary-panel">
+                        <div class="culinary-glow-card">
+                            <div class="culinary-card-title">
+                                <i class="fa-solid fa-hat-chef text-accent"></i>
+                                <span>Chef & Bioavailability Technique</span>
+                            </div>
+                            <p class="culinary-text">{{ meal.recipe_notes }}</p>
+                            <div class="culinary-footer-tip">
+                                <i class="fa-solid fa-wand-magic-sparkles text-amber"></i>
+                                <span>Maximizes micronutrient absorption & minimizes blood glucose spikes</span>
+                            </div>
                         </div>
                     </div>
                     {% endif %}
@@ -160,26 +304,40 @@
         </div>
     </div>
 
-    <!-- Smart Grocery Checklist -->
+    <!-- Smart Categorized Weekly Grocery Checklist -->
     {% if plan_data.grocery_list %}
-    <div class="grocery-section mt-5">
-        <div class="section-heading-bar">
-            <h2><i class="fa-solid fa-cart-shopping"></i> Smart Weekly Grocery Checklist</h2>
-            <span class="hint-text no-print">Click any item to check off as purchased</span>
+    <div class="pro-grocery-section mb-5">
+        <div class="pro-section-header">
+            <div>
+                <h2><i class="fa-solid fa-cart-shopping text-accent"></i> Smart Weekly Grocery Checklist</h2>
+                <p class="section-subtext">Optimized whole-food pantry checklist for your entire weekly preparation</p>
+            </div>
+            <div class="grocery-summary-progress no-print">
+                <div class="g-progress-text">
+                    <span id="groceryCount">0</span> of <span id="groceryTotal">0</span> items acquired
+                </div>
+                <div class="g-progress-bar">
+                    <div class="g-progress-fill" id="groceryProgressFill" style="width: 0%;"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="grocery-categories-grid">
+        <div class="pro-grocery-grid" id="groceryGrid">
             {% for category, items in plan_data.grocery_list.items() %}
             {% set cat_idx = loop.index %}
-            <div class="grocery-card glass-panel">
+            <div class="pro-grocery-card glass-panel-3d">
                 <div class="grocery-card-header">
-                    <i class="fa-solid {% if 'Produce' in category %}fa-carrot{% elif 'Protein' in category %}fa-drumstick-bite{% elif 'Grain' in category %}fa-wheat-awn{% else %}fa-jar{% endif %}"></i>
+                    <div class="g-cat-icon">
+                        <i class="fa-solid {% if 'Produce' in category or 'Greens' in category %}fa-carrot text-success{% elif 'Protein' in category or 'Dairy' in category %}fa-drumstick-bite text-protein{% elif 'Grain' in category or 'Pantry' in category %}fa-wheat-awn text-carbs{% else %}fa-jar text-amber{% endif %}"></i>
+                    </div>
                     <h4>{{ category }}</h4>
+                    <span class="g-item-count">({{ items|length }})</span>
                 </div>
-                <ul class="grocery-items-list">
+                <ul class="pro-checklist">
                     {% for item in items %}
-                    <li class="checklist-item" onclick="toggleChecklist(this)">
-                        <input type="checkbox" id="g-{{ cat_idx }}-{{ loop.index }}">
+                    <li class="pro-checklist-item" onclick="toggleChecklist(this)">
+                        <input type="checkbox" id="g-{{ cat_idx }}-{{ loop.index }}" class="g-checkbox">
+                        <span class="g-check-icon"><i class="fa-solid fa-check"></i></span>
                         <label for="g-{{ cat_idx }}-{{ loop.index }}">{{ item }}</label>
                     </li>
                     {% endfor %}
@@ -190,12 +348,15 @@
     </div>
     {% endif %}
 
-    <!-- Bottom Actions -->
-    <div class="plan-footer-actions no-print mt-5">
-        <a href="{{ url_for('main.history') }}" class="btn btn-secondary">
+    <!-- Bottom Actions Toolbar -->
+    <div class="pro-footer-toolbar no-print mt-5">
+        <a href="{{ url_for('main.history') }}" class="btn btn-secondary btn-3d">
             <i class="fa-solid fa-clock-rotate-left"></i> View All Saved Plans
         </a>
-        <button class="btn btn-primary" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <button class="btn btn-secondary btn-3d" onclick="copyPlanSummary()">
+            <i class="fa-solid fa-share-nodes"></i> Share / Copy Plan
+        </button>
+        <button class="btn btn-primary btn-3d" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
             <i class="fa-solid fa-arrow-up"></i> Back to Top
         </button>
     </div>
@@ -204,6 +365,81 @@
 
 {% block scripts %}
 <script>
+    // Water tracker
+    let loggedGlasses = 0;
+    function toggleWaterGlass(btn, num) {
+        const glasses = document.querySelectorAll('.glass-icon-btn');
+        if (btn.classList.contains('active') && num === loggedGlasses) {
+            btn.classList.remove('active');
+            loggedGlasses = num - 1;
+        } else {
+            loggedGlasses = num;
+            glasses.forEach((g, idx) => {
+                if (idx < num) g.classList.add('active');
+                else g.classList.remove('active');
+            });
+        }
+        const liters = (loggedGlasses * 0.25).toFixed(2);
+        document.getElementById('hydroStatusText').innerText = `${loggedGlasses} of 10 glasses logged (${liters} L)`;
+        if (loggedGlasses === 10) {
+            showToast("🎉 Daily hydration goal achieved! Outstanding work!", "success");
+        }
+    }
+
+    // Meal Filter
+    function filterMeals(category, btn) {
+        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        const cards = document.querySelectorAll('.pro-meal-card');
+        cards.forEach(card => {
+            const mealName = card.getAttribute('data-meal-name') || '';
+            if (category === 'all' || mealName.toLowerCase().includes(category.toLowerCase())) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // Toggle Meal Completed
+    function toggleMealEaten(index) {
+        const card = document.getElementById(`meal-card-${index}`);
+        const btn = card.querySelector('.btn-mark-eaten');
+        if (card.classList.contains('eaten')) {
+            card.classList.remove('eaten');
+            btn.innerHTML = '<i class="fa-regular fa-circle-check"></i> <span>Mark Eaten</span>';
+        } else {
+            card.classList.add('eaten');
+            btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Completed</span>';
+            showToast("Window marked as completed! Keep going strong.", "success");
+        }
+    }
+
+    // Checkbox items inside meals
+    function toggleIngredient(input) {
+        const row = input.closest('.ingredient-row');
+        if (input.checked) row.classList.add('checked');
+        else row.classList.remove('checked');
+    }
+
+    // Grocery checklist progress
+    function updateGroceryProgress() {
+        const allChecks = document.querySelectorAll('.g-checkbox');
+        const total = allChecks.length;
+        let checked = 0;
+        allChecks.forEach(c => { if (c.checked) checked++; });
+
+        document.getElementById('groceryTotal').innerText = total;
+        document.getElementById('groceryCount').innerText = checked;
+        const pct = total > 0 ? Math.round((checked / total) * 100) : 0;
+        document.getElementById('groceryProgressFill').style.width = `${pct}%`;
+
+        if (checked === total && total > 0) {
+            showToast("🎉 Weekly grocery list complete! You're ready to meal prep.", "success");
+        }
+    }
+
     function toggleChecklist(el) {
         const checkbox = el.querySelector('input[type="checkbox"]');
         if (event.target !== checkbox) {
@@ -214,15 +450,35 @@
         } else {
             el.classList.remove('checked');
         }
+        updateGroceryProgress();
     }
 
+    // Copy grocery list
+    function copyGroceryList() {
+        let text = "🛒 NutriGen AI - Weekly Grocery Checklist:\n\n";
+        document.querySelectorAll('.pro-grocery-card').forEach(card => {
+            const cat = card.querySelector('h4').innerText;
+            text += `[ ${cat} ]\n`;
+            card.querySelectorAll('.pro-checklist-item label').forEach(lbl => {
+                text += `• ${lbl.innerText}\n`;
+            });
+            text += "\n";
+        });
+        navigator.clipboard.writeText(text).then(() => {
+            showToast("Grocery checklist copied to clipboard!", "success");
+        }).catch(() => {
+            showToast("Failed to copy groceries", "warning");
+        });
+    }
+
+    // Copy plan summary
     function copyPlanSummary() {
         const title = "{{ plan.title }}";
         const cals = "{{ plan.target_calories|int }}";
         const p = "{{ plan.protein_g|int }}g";
         const c = "{{ plan.carbs_g|int }}g";
         const f = "{{ plan.fat_g|int }}g";
-        const text = `🥗 ${title}\n🔥 Target Energy: ${cals} kcal\n💪 Macros: Protein: ${p} | Carbs: ${c} | Fats: ${f}\nGenerated by NutriGen AI Diet Planner\nLink: ${window.location.href}`;
+        const text = `🥗 ${title}\n🔥 Target Energy: ${cals} kcal\n💪 Macros: Protein: ${p} | Carbs: ${c} | Fats: ${f}\n🧬 Client: {{ plan.user_name }} ({{ plan.weight }}kg)\nGenerated by NutriGen AI Precision Nutrition Platform\nLink: ${window.location.href}`;
         
         navigator.clipboard.writeText(text).then(() => {
             showToast("Diet plan summary copied to clipboard!", "success");
@@ -230,5 +486,9 @@
             showToast("Failed to copy summary", "warning");
         });
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateGroceryProgress();
+    });
 </script>
 {% endblock %}
